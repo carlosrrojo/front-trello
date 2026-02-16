@@ -1,0 +1,74 @@
+@if(board){
+    <div class="board-container">
+        <!-- Header -->
+        <div class="board-header">
+            <h1 class="board-title">{{ board.title }}</h1>
+            <div class="board-meta">
+                <span class="priority-tag" [class]="board.priority.toLowerCase()">{{ board.priority }}</span>
+            </div>
+            <div class="board-actions">
+                <button class="btn-primary-sm">Add Member</button>
+                <button class="btn-secondary">Settings</button>
+            </div>
+        </div>
+
+        <!-- Board Content -->
+        <div class="board-content">
+            <div class="columns-wrapper" cdkDropListGroup>
+                @for(list of board.lists; track list.id){
+                    <div class="column">
+                        <div class="column-header">
+                            {{ list.title }}
+                            <span class="task-count">{{ list.tasks.length }}</span>
+                        </div>
+
+                        <div cdkDropList [cdkDropListData]="list.tasks" class="task-list"
+                            (cdkDropListDropped)="drop($event, list.id)">
+
+                            @for(task of list.tasks; track task.id){
+                                <div cdkDrag class="task-card group">
+                                    <div class="task-card-header">
+                                        <span class="task-title">{{ task.title}}</span>
+                                        <button class="task-edit-btn">
+                                            <i class="fas fa-pen"></i>
+                                        </button>
+                                    </div>
+                                    @if(task.description){
+                                        <div class="task-desc">{{ task.description}}</div>
+                                    }
+
+                                    <div class="task-meta">
+                                        <div class="flex items-start">
+                                            @if(task.priority){
+                                                <span class="task-priority">
+                                                    <i class="fas fa-flag" [ngClass]="getPriorityClass(task.priority)"></i>
+                                                </span>
+                                            }
+                                        </div>
+                                        <!-- Avatar placeholder -->
+                                        <div class="task-assignee">
+                                            CA
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="p-2">
+                            <button class="add-card-btn">
+                                <span class="mr-2">+</span> Add a card
+                            </button>
+                        </div>
+                    </div>
+                }
+                <div class="add-column-wrapper">
+                    <button class="add-column-btn">
+                        + Add another list
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+} @else {
+    <div class="loading">Loading board...</div>
+}

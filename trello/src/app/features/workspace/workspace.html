@@ -1,0 +1,16 @@
+<div class="workspace-container">
+    <div class="header">
+        <h2>Workspace Boards</h2>
+        <button (click)="createBoard()">Create new board</button>
+    </div>
+
+    <div class="boards-grid">
+        @for(board of boards; track board.id) {
+            <div class="board-card" [routerLink]="['/board', board.id]">
+                <h3>{{ board.title}}</h3>
+                <span class="priority-tag" [class]="board.priority.toLowerCase()">{{ board.priority }}</span>
+            </div>
+        }
+    </div>
+    <a routerLink="/dashboard">Back to dashboard</a>
+</div>

@@ -1,0 +1,38 @@
+<div class="dashboard-container">
+    <h2>My Workspaces</h2>
+
+    @if(loading) {
+        <div>Loading workspaces...</div>
+    } @else{
+        @if (workspaces.length === 0) {
+            <div>
+                <p>No workspaces found. Create a new one to get started!</p>
+            </div>
+        } @else {
+            <ul>
+                @for (workspace of workspaces; track workspace.id) {
+                    <li>
+                        <a [routerLink]="['/workspace', workspace.id]">{{ workspace.name }}</a>
+                    </li>
+                }
+            </ul>
+        }
+        <button (click)="showCreateForm = true">Create Workspace</button>
+    }
+    @if (showCreateForm) {
+        <div class="create-form">
+            <div class="form-group">
+                <label for="ws-name">Workspace Name</label>
+                <input type="text" id="ws-name" [(ngModel)]="newWorkspaceName" placeholder="Workspace Name" />
+            </div>
+            <div class="form-group">
+                <label for="ws-description">Description</label>
+                <textarea id="ws-description" [(ngModel)]="newWorkspaceDescription" placeholder="Description"></textarea>
+            </div>
+            <div class="form-actions">
+                <button (click)="createWorkspace()" [disabled]="!newWorkspaceName">Create</button>
+                <button (click)="cancelCreate()">Cancel</button>
+            </div>
+        </div>
+    }
+</div>
