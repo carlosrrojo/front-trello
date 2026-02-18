@@ -1,16 +1,54 @@
 <div class="workspace-container">
-    <div class="header">
-        <h2>Workspace Boards</h2>
-        <button (click)="createBoard()">Create new board</button>
-    </div>
+    @if (loading()) {
+        <div class="loading-container">
+            <div class="spinner"></div>
+            <p>Loading boards...</p>
+        </div>
+    } @else {
+        <div class="workspace-header">
+            <div class="header-content">
+                <h2 class="workspace-title">Workspace Boards</h2>
+                <p class="workspace-subtitle">Manage and organize your projects</p>
+            </div>
+            <button class="btn-create-board" (click)="createBoard()" aria-label="Create new board">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                New Board
+            </button>
+        </div>
 
-    <div class="boards-grid">
-        @for(board of boards; track board.id) {
-            <div class="board-card" [routerLink]="['/board', board.id]">
-                <h3>{{ board.title}}</h3>
-                <span class="priority-tag" [class]="board.priority.toLowerCase()">{{ board.priority }}</span>
+        @if (boards().length > 0) {
+            <div class="boards-grid">
+                @for(board of boards(); track board.id) {
+                    <button class="board-card" [routerLink]="['/board', board.id]">
+                        <div class="board-card-header">
+                            <h3 class="board-title">{{ board.title }}</h3>
+                            <span class="priority-tag" [class]="'priority-' + (board.priority?.toLowerCase() || 'medium')">
+                                {{ board.priority || 'Medium' }}
+                            </span>
+                        </div>
+                        <div class="board-card-footer">
+                            <span class="board-link">Open board →</span>
+                        </div>
+                    </button>
+                }
+            </div>
+        } @else {
+            <div class="empty-state">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                    <rect x="3" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="14" width="7" height="7"></rect>
+                    <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
+                <h3>No boards yet</h3>
+                <p>Create your first board to get started</p>
+                <button class="btn-create-empty" (click)="createBoard()">
+                    Create First Board
+                </button>
             </div>
         }
-    </div>
-    <a routerLink="/dashboard">Back to dashboard</a>
+    }
 </div>

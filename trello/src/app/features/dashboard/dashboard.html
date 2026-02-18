@@ -1,38 +1,110 @@
-<div class="dashboard-container">
-    <h2>My Workspaces</h2>
+<div class="dashboard-layout">
+    <!-- Sidebar Toggle Button (Mobile) -->
+    <button class="sidebar-toggle" (click)="toggleSidebar()" aria-label="Toggle sidebar" aria-controls="sidebar-panel">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+    </button>
 
-    @if(loading) {
-        <div>Loading workspaces...</div>
-    } @else{
-        @if (workspaces.length === 0) {
-            <div>
-                <p>No workspaces found. Create a new one to get started!</p>
-            </div>
-        } @else {
-            <ul>
-                @for (workspace of workspaces; track workspace.id) {
-                    <li>
-                        <a [routerLink]="['/workspace', workspace.id]">{{ workspace.name }}</a>
-                    </li>
-                }
-            </ul>
-        }
-        <button (click)="showCreateForm = true">Create Workspace</button>
-    }
-    @if (showCreateForm) {
-        <div class="create-form">
-            <div class="form-group">
-                <label for="ws-name">Workspace Name</label>
-                <input type="text" id="ws-name" [(ngModel)]="newWorkspaceName" placeholder="Workspace Name" />
-            </div>
-            <div class="form-group">
-                <label for="ws-description">Description</label>
-                <textarea id="ws-description" [(ngModel)]="newWorkspaceDescription" placeholder="Description"></textarea>
-            </div>
-            <div class="form-actions">
-                <button (click)="createWorkspace()" [disabled]="!newWorkspaceName">Create</button>
-                <button (click)="cancelCreate()">Cancel</button>
-            </div>
+    <!-- Sidebar Panel -->
+    <aside id="sidebar-panel" class="sidebar" [class.sidebar-close]="sidebarOpen()">
+        <div class="sidebar-header">
+            <h1 class="sidebar-title">Workspaces</h1>
+            <button class="sidebar-close" (click)="toggleSidebar()" aria-label="Close sidebar">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
         </div>
-    }
+
+        <!-- Workspaces List -->
+        <div class="workspaces-container">
+            @if (loading()) {
+                <div class="loading-state">
+                    <div class="spinner"></div>
+                    <p>Loading workspaces...</p>
+                </div>
+            } @else if (workspacesLoaded()) {
+                <nav class="workspaces-list">
+                    @for (workspace of workspaces(); track workspace.id) {
+                        <button 
+                            class="workspace-item"
+                            [class.active]="selectedWorkspaceId() === workspace.id"
+                            (click)="selectWorkspace(workspace)"
+                            [attr.aria-current]="selectedWorkspaceId() === workspace.id ? 'page' : null"
+                        >
+                            <div class="workspace-icon">
+                                {{ workspace.name.charAt(0).toUpperCase() }}
+                            </div>
+                            <div class="workspace-info">
+                                <span class="workspace-name">{{ workspace.name }}</span>
+                                @if (workspace.description) {
+                                    <span class="workspace-desc">{{ workspace.description }}</span>
+                                }
+                            </div>
+                        </button>
+                    }
+                </nav>
+            }
+        </div>
+
+        <!-- Create Workspace Section -->
+        <div class="sidebar-footer">
+            @if (!showCreateForm()) {
+                <button class="btn-create-workspace" (click)="showCreateForm.set(true)">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    New Workspace
+                </button>
+            } @else {
+                <form [formGroup]="createFormGroup" (ngSubmit)="createWorkspace()" class="create-form-compact">
+                    <input 
+                        type="text" 
+                        formControlName="name" 
+                        placeholder="Workspace name"
+                        class="form-input-compact"
+                        autocomplete="off"
+                    />
+                    <div class="form-actions-compact">
+                        <button type="submit" class="btn-create" [disabled]="!createFormGroup.valid">
+                            Create
+                        </button>
+                        <button type="button" (click)="cancelCreate()" class="btn-cancel">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            }
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+        <div class="content-placeholder">
+            @if (selectedWorkspaceId()) {
+                <router-outlet></router-outlet>
+            } @else if (loading()) {
+                <div class="loading-state">
+                    <div class="spinner"></div>
+                    <p>Loading workspace...</p>
+                </div>
+            } @else {
+                <div class="empty-state">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                        <rect x="3" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="14" width="7" height="7"></rect>
+                        <rect x="3" y="14" width="7" height="7"></rect>
+                    </svg>
+                    <h2>Select a Workspace</h2>
+                    <p>Choose a workspace from the sidebar to get started</p>
+                </div>
+            }
+        </div>
+    </main>
 </div>

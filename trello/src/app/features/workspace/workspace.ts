@@ -1,7 +1,7 @@
 import { CommonModule } from "@angular/common";
-import { Component, OnInit } from "@angular/core";
-import { ActivatedRoute, RouterModule, Router } from "@angular/router";
-import { Workspace, WorkspaceService } from "../../core/services/workspace";
+import { Component, OnInit, inject, ChangeDetectionStrategy, signal } from "@angular/core";
+import { ActivatedRoute, RouterModule } from "@angular/router";
+import { WorkspaceService, Workspace } from "../../core/services/workspace";
 import { Board, BoardService }  from "../../core/services/board";
 
 @Component({
@@ -9,41 +9,50 @@ import { Board, BoardService }  from "../../core/services/board";
     standalone: true,
     imports: [CommonModule, RouterModule],
     templateUrl: './workspace.html',
-    styles: [`
-        .workspace-container {padding: 20px;}`
-    ]
+    styleUrls: ['./workspace.css'],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class WorkspaceComponent implements OnInit {
-    workspaceId: string | null = null;
-    workspace: Workspace | null = null;
-    boards: Board[] = [];
+    
+    private route = inject(ActivatedRoute);
+    private boardService = inject(BoardService);
 
-    constructor(
-        private route: ActivatedRoute,
-        private boardService: BoardService,
-        private router: Router
-    ) {
-    }
+    workspaceId = signal<string | null>(null);
+    workspace = signal<Workspace | null>(null);
+    boards = signal<Board[]>([]);
+    loading = signal(false);
 
     ngOnInit(): void {
         this.route.paramMap.subscribe(params => {
-            this.workspaceId = params.get('id');
-            if (this.workspaceId){
-                this.boardService.getBoards(this.workspaceId).subscribe(boards => {
-                    this.boards = boards;
-                })
+            this.workspaceId.set(params.get('id'));
+            if (this.workspaceId()) {
+                this.loading.set(true);
+                this.boardService.getBoards(this.workspaceId()!).subscribe({
+                    next: (boards) => {
+                        this.boards.set(boards);
+                        this.loading.set(false);
+                    },
+                    error: (err) => {
+                        console.error('Error fetching boards:', err);
+                        this.loading.set(false);
+                    }
+                });
             }
         });
     }
 
     createBoard(): void {
-        // Mocj board creation
         this.boardService.createBoard({
             title: 'New Board',
-            workspaceId: this.workspaceId!,
+            workspaceId: this.workspaceId()!,
             priority: 'Medium'
-        }).subscribe(board => {
-            this.boards.push(board);
-        })
+        }).subscribe({
+            next: (board) => {
+                this.boards.update(b => [...b, board]);
+            },
+            error: (err) => {
+                console.error('Error creating board:', err);
+            }
+        });
     }
 }

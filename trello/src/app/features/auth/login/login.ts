@@ -1,4 +1,4 @@
-import { Component, inject, Inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import {CommonModule} from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from '../../../core/auth/auth';
@@ -9,25 +9,24 @@ import { Router, RouterModule } from '@angular/router';
     standalone: true,
     imports: [CommonModule, ReactiveFormsModule, RouterModule],
     templateUrl: './login.html',
-    styleUrls: ['./login.css']
+    styleUrls: ['./login.css'],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LoginComponent {
 
     private authService: AuthService = inject(AuthService);
+    private router: Router = inject(Router);
+    private fb: FormBuilder = inject(FormBuilder);
 
-    loginForm: FormGroup;
-    isLoginFailed = false
+    loginForm: FormGroup = this.fb.group({
+        username: ['', Validators.required],
+        password: ['', Validators.required]
+    });
+    
+    isLoginFailed = false;
     errorMessage = '';
 
-    constructor(private fb: FormBuilder, private router: Router) {
-        this.loginForm = this.fb.group({
-            username: ['', Validators.required],
-            password: ['', Validators.required]
-        });
-    }
     onSubmit(): void {
-        //this.router.navigate(['/dashboard']);
-        
         if (this.loginForm.valid) {
             this.authService.login(this.loginForm.value).subscribe({
                 next: (data) => {
@@ -35,7 +34,7 @@ export class LoginComponent {
                     this.router.navigate(['/dashboard']);
                 },
                 error: (err) => {
-                    this.errorMessage = err.error.message || 'Login failed';
+                    this.errorMessage = err.error.message || 'Login failed. Please try again.';
                     this.isLoginFailed = true;
                 }
             });
